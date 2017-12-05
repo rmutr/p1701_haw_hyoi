@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Xchange</string>
+    <string name="change_money">แลกเปลี่ยน เงินตรา</string>
+
+    <string name="usd">กรอกจำนวนเงิน ดอลล่า</string>
+    <string name="thb">กรอกจำนวนเงิน บาท</string>
+
+</resources>

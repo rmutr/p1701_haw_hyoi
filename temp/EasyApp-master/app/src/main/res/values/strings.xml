@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Easy App</string>
+    <string name="decrease">ลดลง</string>
+    <string name="increase">เพิ่มขึ้น</string>
+</resources>
