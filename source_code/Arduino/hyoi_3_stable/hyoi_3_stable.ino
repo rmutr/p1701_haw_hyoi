@@ -54,6 +54,8 @@ char bc2buf[BC_LEN] = {0};
 int bc3ix = 0;
 char bc3buf[BC_LEN] = {0};
 
+int px_val        = 0;
+int px_val_old    = 0;
 int pb_val        = 0;
 int pb_val_old    = 0;
 int disp_mode     = 0;
@@ -126,6 +128,18 @@ void loop()
   Update_Pb();
   Update_Bc_Serial();
   Update_Mobile_Serial();
+
+  if (px_val_old != px_val) {
+    px_val_old = px_val;
+
+    if (px_val == 0) {
+      Serial.println("<-- Prox. = OFF");
+    } else {
+      Serial.println("<-- Prox. = ON");
+      Serial.println("--> Send request scanning to mobile.");
+      Serial2.println("REQ_BC");
+    }
+  }
 
   if (pb_val_old != pb_val) {
     pb_val_old = pb_val;
@@ -451,7 +465,8 @@ void loop()
 
 
 void Update_Bc_Prox() {
-  digitalWrite(PIN_DO_BC_TRIG, !digitalRead(PIN_DI_BC_PROX));
+  px_val = !digitalRead(PIN_DI_BC_PROX);
+  digitalWrite(PIN_DO_BC_TRIG, px_val);
 }
 
 void Update_Pb() {
