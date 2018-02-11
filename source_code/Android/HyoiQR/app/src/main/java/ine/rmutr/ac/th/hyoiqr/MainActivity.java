@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.physicaloid.lib.Physicaloid;
 //import com.physicaloid.lib.usb.driver.uart.ReadLisener;
@@ -12,8 +13,11 @@ import com.physicaloid.lib.usb.driver.uart.UartConfig;
 
 public class MainActivity extends AppCompatActivity {
     int system_state;
+    String rx_str;
+    int cdt_rx_delay;
     Physicaloid commMobile;
-    Button btnOpen;
+    Button btnOpen, btnTypeA, btnTypeB, btnTypeC;
+    TextView txtResult, txtSysInfo;
     CountDownTimer cdtUpdate;
 
     @Override
@@ -22,10 +26,17 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         this.system_state = 0;
+        this.rx_str = new String();
+        this.cdt_rx_delay = 0;
 
         this.commMobile = new Physicaloid(this);
 
-        btnOpen = (Button)findViewById(R.id.btnOpen);
+        btnOpen    = (Button)findViewById(R.id.btnOpen );
+        btnTypeA   = (Button)findViewById(R.id.btnTypeA);
+        btnTypeB   = (Button)findViewById(R.id.btnTypeB);
+        btnTypeC   = (Button)findViewById(R.id.btnTypeC);
+        txtResult  = (TextView)findViewById(R.id.txtResult);
+        txtSysInfo = (TextView)findViewById(R.id.txtSysInfo);
 
         cdtUpdate = new CountDownTimer(100, 100) {
             @Override
@@ -42,15 +53,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void ProcessRun() {
-        this.btnOpen.setText(String.valueOf(this.system_state));
-
+        this.txtSysInfo.setText("Process runnning on state " + String.valueOf(system_state));
         switch (system_state) {
             default:
             case 0:
+                this.btnOpen.setEnabled(true);
+                this.btnTypeA.setEnabled(false);
+                this.btnTypeB.setEnabled(false);
+                this.btnTypeC.setEnabled(false);
+
                 if (this.commMobile.isOpened() == true) {
                     this.commMobile.close();
                 }
-                this.system_state++;
                 break;
 
             case 1:
@@ -61,18 +75,66 @@ public class MainActivity extends AppCompatActivity {
 
                     this.commMobile.open();
                 } else {
+                    this.btnOpen.setEnabled(false);
+                    this.btnTypeA.setEnabled(true);
+                    this.btnTypeB.setEnabled(true);
+                    this.btnTypeC.setEnabled(true);
+
                     this.system_state++;
                 }
                 break;
 
             case 2:
+                if (this.commMobile.isOpened() == false) {
+                    this.system_state = 0;
+                } else {
+                    byte[] brx_buf = new byte[256];
+                    int brx_bufs = 0;
+                    brx_bufs = this.commMobile.read(brx_buf);
 
+                    if (brx_bufs > 0)
+                    {
+                        String brx_str = new String(brx_buf);
+                        rx_str = brx_str;
+                        this.system_state++;
+                    }
+                }
+                break;
+
+            case 3:
+                if (this.commMobile.isOpened() == false) {
+                    this.system_state = 0;
+                } else {
+                    byte[] brx_buf = new byte[256];
+                    int brx_bufs = 0;
+                    brx_bufs = this.commMobile.read(brx_buf);
+
+                    if (brx_bufs > 0)
+                    {
+                        String brx_str = new String(brx_buf);
+                        rx_str += brx_str;
+                    }
+                    this.txtResult.setText(rx_str);
+                    this.cdt_rx_delay = 20;
+                    this.system_state++;
+                }
+                break;
+
+            case 4:
+                if (this.cdt_rx_delay > 0) {
+                    this.cdt_rx_delay--;
+                } else {
+                    this.txtResult.setText("");
+                    this.system_state = 2;
+                }
                 break;
         }
     }
 
     public void btnOpen_onClick(View view) {
-
+        if (this.system_state == 0) {
+            this.system_state++;
+        }
     }
 
     public void btnTypeA_onClick(View view) {
