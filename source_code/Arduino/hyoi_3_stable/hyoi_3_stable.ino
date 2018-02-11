@@ -137,7 +137,7 @@ void loop()
     } else {
       Serial.println("<-- Prox. = ON");
       Serial.println("--> Send request scanning to mobile.");
-      Serial2.println("REQ_BC");
+      Serial2.print("-rr");
     }
   }
 
