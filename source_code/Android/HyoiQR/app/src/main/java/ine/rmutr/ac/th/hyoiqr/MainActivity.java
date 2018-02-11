@@ -8,11 +8,8 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.physicaloid.lib.Physicaloid;
-//import com.physicaloid.lib.usb.driver.uart.ReadLisener;
 import com.physicaloid.lib.usb.driver.uart.ReadLisener;
 import com.physicaloid.lib.usb.driver.uart.UartConfig;
-
-import java.io.UnsupportedEncodingException;
 
 public class MainActivity extends AppCompatActivity {
     int system_state;
