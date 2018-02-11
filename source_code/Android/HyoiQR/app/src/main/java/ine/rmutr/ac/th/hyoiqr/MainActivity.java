@@ -9,11 +9,14 @@ import android.widget.TextView;
 
 import com.physicaloid.lib.Physicaloid;
 //import com.physicaloid.lib.usb.driver.uart.ReadLisener;
+import com.physicaloid.lib.usb.driver.uart.ReadLisener;
 import com.physicaloid.lib.usb.driver.uart.UartConfig;
+
+import java.io.UnsupportedEncodingException;
 
 public class MainActivity extends AppCompatActivity {
     int system_state;
-    String rx_str;
+    String rx_buf_str, rx_str;
     int cdt_rx_delay;
     Physicaloid commMobile;
     Button btnOpen, btnTypeA, btnTypeB, btnTypeC;
@@ -26,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         this.system_state = 0;
+        this.rx_buf_str = new String();
         this.rx_str = new String();
         this.cdt_rx_delay = 0;
 
@@ -65,15 +69,33 @@ public class MainActivity extends AppCompatActivity {
                 if (this.commMobile.isOpened() == true) {
                     this.commMobile.close();
                 }
+                this.commMobile.clearReadListener();
                 break;
 
             case 1:
                 if (this.commMobile.isOpened() == false) {
+
                     UartConfig uartConfig = new UartConfig(9600, UartConfig.DATA_BITS7
                             , UartConfig.STOP_BITS1, UartConfig.PARITY_EVEN, false, false);
                     commMobile.setConfig(uartConfig);
 
                     this.commMobile.open();
+
+                    this.commMobile.addReadListener(new ReadLisener() {
+
+                        @Override
+                        public void onRead(int i) {
+
+                            byte[] brx_buf = new byte[255];
+
+                            int brx_bufs = commMobile.read(brx_buf);
+
+                            if (brx_bufs > 0) {
+                                rx_buf_str = new String(brx_buf);
+                            }
+                        }
+                    });
+
                 } else {
                     this.btnOpen.setEnabled(false);
                     this.btnTypeA.setEnabled(true);
@@ -88,16 +110,12 @@ public class MainActivity extends AppCompatActivity {
                 if (this.commMobile.isOpened() == false) {
                     this.system_state = 0;
                 } else {
-                    byte[] brx_buf = new byte[256];
-                    int brx_bufs = 0;
-                    brx_bufs = this.commMobile.read(brx_buf);
 
-                    if (brx_bufs > 0)
-                    {
-                        String brx_str = new String(brx_buf);
-                        rx_str = brx_str;
+                    if (this.rx_buf_str.length() > 0) {
+                        this.rx_str = this.rx_buf_str;
                         this.system_state++;
                     }
+
                 }
                 break;
 
@@ -105,15 +123,12 @@ public class MainActivity extends AppCompatActivity {
                 if (this.commMobile.isOpened() == false) {
                     this.system_state = 0;
                 } else {
-                    byte[] brx_buf = new byte[256];
-                    int brx_bufs = 0;
-                    brx_bufs = this.commMobile.read(brx_buf);
 
-                    if (brx_bufs > 0)
-                    {
-                        String brx_str = new String(brx_buf);
-                        rx_str += brx_str;
+                    if (this.rx_buf_str.length() > 0) {
+                        this.rx_str = this.rx_buf_str;
                     }
+
+                    this.rx_buf_str = "";
                     this.txtResult.setText(rx_str);
                     this.cdt_rx_delay = 20;
                     this.system_state++;
