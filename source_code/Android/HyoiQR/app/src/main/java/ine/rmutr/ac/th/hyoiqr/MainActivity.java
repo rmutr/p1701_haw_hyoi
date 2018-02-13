@@ -11,6 +11,8 @@ import com.physicaloid.lib.Physicaloid;
 import com.physicaloid.lib.usb.driver.uart.ReadLisener;
 import com.physicaloid.lib.usb.driver.uart.UartConfig;
 
+
+
 public class MainActivity extends AppCompatActivity {
     int system_state;
     String rx_buf_str, rx_str;
@@ -19,6 +21,8 @@ public class MainActivity extends AppCompatActivity {
     Button btnOpen, btnTypeA, btnTypeB, btnTypeC;
     TextView txtResult, txtSysInfo;
     CountDownTimer cdtUpdate;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -143,11 +147,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //------------------------------------Connect------------------------------------
+
     public void btnOpen_onClick(View view) {
         if (this.system_state == 0) {
             this.system_state++;
         }
     }
+
+    //------------------------------------A,B,C------------------------------------
 
     public void btnTypeA_onClick(View view) {
         if (commMobile.isOpened() == true) {
