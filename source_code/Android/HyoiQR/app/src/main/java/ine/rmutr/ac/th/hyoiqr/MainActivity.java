@@ -141,6 +141,8 @@ public class MainActivity extends AppCompatActivity implements ZXingScannerView.
                     this.txtResult.setText(rx_str);
                     this.cdt_rx_delay = 20;
                     this.system_state++;
+
+                    this.btnQROpen_onClick(null);
                 }
                 break;
 
@@ -217,9 +219,11 @@ public class MainActivity extends AppCompatActivity implements ZXingScannerView.
         Toast.makeText(MainActivity.this, this.qr_result_str, Toast.LENGTH_SHORT).show();
         setContentView(R.layout.activity_main);
 
-        if (commMobile.isOpened() == true) {
-            byte[] btx_buf = this.qr_result_str.getBytes();
-            commMobile.write(btx_buf, btx_buf.length);
+        if (this.qr_result_str.length() != 0) {
+            if (commMobile.isOpened() == true) {
+                byte[] btx_buf = this.qr_result_str.getBytes();
+                commMobile.write(btx_buf, btx_buf.length);
+            }
         }
 
         //zXingScannerView.resumeCameraPreview(this);
