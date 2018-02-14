@@ -6,23 +6,27 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.zxing.Result;
 import com.physicaloid.lib.Physicaloid;
 import com.physicaloid.lib.usb.driver.uart.ReadLisener;
 import com.physicaloid.lib.usb.driver.uart.UartConfig;
 
+import me.dm7.barcodescanner.zxing.ZXingScannerView;
 
+public class MainActivity extends AppCompatActivity implements ZXingScannerView.ResultHandler {
 
-public class MainActivity extends AppCompatActivity {
     int system_state;
     String rx_buf_str, rx_str;
     int cdt_rx_delay;
     Physicaloid commMobile;
-    Button btnOpen, btnTypeA, btnTypeB, btnTypeC;
-    TextView txtResult, txtSysInfo;
+    Button btnOpen, btnTypeA, btnTypeB, btnTypeC, btnQROpen;
+    TextView txtResult, txtSysInfo, txtQRResult;
     CountDownTimer cdtUpdate;
 
-
+    String qr_result_str;
+    ZXingScannerView zXingScannerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,12 +40,16 @@ public class MainActivity extends AppCompatActivity {
 
         this.commMobile = new Physicaloid(this);
 
-        btnOpen    = (Button)findViewById(R.id.btnOpen );
-        btnTypeA   = (Button)findViewById(R.id.btnTypeA);
-        btnTypeB   = (Button)findViewById(R.id.btnTypeB);
-        btnTypeC   = (Button)findViewById(R.id.btnTypeC);
-        txtResult  = (TextView)findViewById(R.id.txtResult);
-        txtSysInfo = (TextView)findViewById(R.id.txtSysInfo);
+        this.qr_result_str = new String();
+
+        btnOpen     = (Button)findViewById(R.id.btnOpen );
+        btnTypeA    = (Button)findViewById(R.id.btnTypeA);
+        btnTypeB    = (Button)findViewById(R.id.btnTypeB);
+        btnTypeC    = (Button)findViewById(R.id.btnTypeC);
+        btnQROpen   = (Button)findViewById(R.id.btnQROpen);
+        txtResult   = (TextView)findViewById(R.id.txtResult);
+        txtSysInfo  = (TextView)findViewById(R.id.txtSysInfo);
+        txtQRResult = (TextView)findViewById(R.id.txtQRResult);
 
         cdtUpdate = new CountDownTimer(100, 100) {
             @Override
@@ -180,4 +188,42 @@ public class MainActivity extends AppCompatActivity {
             commMobile.write(btx_buf, btx_buf.length);
         }
     }
+
+    public void btnQROpen_onClick(View view) {
+        this.zXingScannerView = new ZXingScannerView(getApplicationContext());
+        setContentView(zXingScannerView);
+        zXingScannerView.setResultHandler(this);
+        zXingScannerView.startCamera();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        //zXingScannerView.setResultHandler(this);
+        //zXingScannerView.startCamera();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        zXingScannerView.stopCamera();
+    }
+
+    @Override
+    public void handleResult(Result result) {
+        this.qr_result_str = result.getText().toString();
+        this.txtQRResult.setText(this.qr_result_str);
+        Toast.makeText(MainActivity.this, this.qr_result_str, Toast.LENGTH_SHORT).show();
+        setContentView(R.layout.activity_main);
+
+        if (commMobile.isOpened() == true) {
+            byte[] btx_buf = this.qr_result_str.getBytes();
+            commMobile.write(btx_buf, btx_buf.length);
+        }
+
+        //zXingScannerView.resumeCameraPreview(this);
+    }
+
+
 }
